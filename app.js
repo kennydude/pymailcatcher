@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom';
 import request from 'superagent';
 import MimeParser from 'emailjs-mime-parser';
 
+function last(a){
+    return a[a.length-1];
+}
+
 class MessageList extends React.Component{
     constructor(){
         super();
@@ -14,7 +18,8 @@ class MessageList extends React.Component{
            console.log(message);
            return (
              <li key={message.id}>
-                node
+                From: {message.from}
+                To: {message.to}
              </li>
            );
         });
@@ -37,8 +42,8 @@ class MessageList extends React.Component{
                     console.log("HEADERS", node.header.join('\n')); // List all headers
                     console.log(node.headers); // List value for Content-Type
                     if(node.headers['from']){
-                        box['from'] = node.headers['from'];
-                        box['to'] = node.headers['to'];
+                        box['from'] = last(node.headers['from']).initial;
+                        box['to'] = last(node.headers['to']).initial;
                     }
                 };
                 parser.onbody = function(node, chunk){

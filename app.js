@@ -160,7 +160,8 @@ class MessageList extends React.Component {
                     console.log(node);
                     box['formats'].push({
                         "type": node.headers['content-type'][0].value,
-                        "text": new TextDecoder(node.charset).decode(chunk)
+                        // todo: check node.charset
+                        "text": new TextDecoder("ascii").decode(chunk)
                     });
                 };
                 parser.onend = (email_obj) => {

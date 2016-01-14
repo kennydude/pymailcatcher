@@ -8,6 +8,57 @@
     <style type="text/css">
         body{
             font-family: sans-serif;
+            padding: 0; margin: 0;
+        }
+        *{
+            box-sizing: border-box;
+        }
+        iframe{
+            display: none;
+        }
+        iframe.active{
+            display: block;
+        }
+        h1{
+            margin: 0px;
+        }
+        .emails{
+            position: absolute;
+            top: 35px;
+            background: #EEE;
+            bottom: 60%;
+            right: 0;
+            left: 0;
+        }
+        .emails ul{
+            padding: 0px;
+            margin: 0px;
+        }
+        .emails li{
+            display: block;
+            padding: 5px;
+            margin: 0px;
+        }
+        .activeEmail{
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            top: 40%;
+            bottom: 0; left: 0; right: 0;
+        }
+        .activeEmail iframe{
+            width: 100%;
+            height: 100%;
+        }
+        .tabs{
+            padding: 0; margin: 0;
+        }
+        .tabs li{
+            display: inline-block;
+            padding: 5px;
+        }
+        .tabs li.active{
+            background: #EEE;
         }
     </style>
 </head>

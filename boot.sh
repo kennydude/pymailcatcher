@@ -1,3 +1,2 @@
 # rm tmp/*
-python mail.py &
-python serve.py
+python mail.py & python serve.py

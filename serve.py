@@ -1,3 +1,4 @@
+import os
 from os import listdir
 from os.path import isfile, join
 from flask import Flask, redirect, jsonify
@@ -10,7 +11,7 @@ def home_page():
 @app.route('/emails')
 def get_emails():
     emails = [f for f in listdir('tmp') if isfile(join('tmp', f))]
-    emails.sort(key=lambda x: os.path.getmtime(x))
+    emails.sort(key=lambda x: os.path.getmtime('tmp/%s' % x))
     ret = []
     for email in emails:
         ret.append(open('tmp/{}'.format(email), 'r').read())

@@ -99,7 +99,7 @@ class MessageItem extends React.Component {
 class MessageList extends React.Component {
     constructor(){
         super();
-        this.state = { emails: [], activeEmail: null };
+        this.state = { emails: [], activeEmail: {id:null} };
     }
 
     handleChangeActiveEmail(message){
@@ -110,14 +110,14 @@ class MessageList extends React.Component {
 
     render(){
         let list = this.state.emails.map((message) => {
-           let active = this.state.activeEmail == message;
+           let active = this.state.activeEmail.id == message.id;
            return (
                 <MessageListItem key={message.id} active={active}
                     message={message} onItemClicked={this.handleChangeActiveEmail.bind(this)} />
            );
         });
         let active = null;
-        if(this.state.activeEmail != null){
+        if(this.state.activeEmail.id != null){
             active = <MessageItem message={this.state.activeEmail} />;
         }
         

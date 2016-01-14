@@ -10,10 +10,18 @@ function last(a){
 class MessageListItem extends React.Component {
     render(){
         let message = this.props.message;
+        let cls = "";
+        if(this.props.active){
+            cls = "active";
+        }
+        
         return (
-            <li onClick={this.handleClick.bind(this)}>
-                From: {message.from}
-                To: {message.to}
+            <li onClick={this.handleClick.bind(this)} className={cls}>
+                {message.subject}
+                <small style={{display:"block"}}>
+                    From: {message.from}&nbsp;
+                    To: {message.to}
+                </small>
              </li>
         )
     }
@@ -34,11 +42,17 @@ class MessageItem extends React.Component {
     constructor(){
         super();
         this.state = {activeFormat:null};
+        this.props = {
+            message:{
+                id: null
+            }
+        }
     }
     
-    componentDidMount(){
+    componentWillReceiveProps(nextProps){
+        if(nextProps.message.id == this.props.message.id) return;
         this.setState({
-            activeFormat: this.props.message.formats[0]
+            activeFormat: nextProps.message.formats[0]
         });
     }
     
@@ -46,8 +60,8 @@ class MessageItem extends React.Component {
         let message = this.props.message;
         let items = this.props.message.formats.map((format, i) => {
             let src = format.text;
-            if(format.type == "text/plain"){
-                src = `<pre>${src}</pre>`;
+            if(format.type == "text/plain" || format.type == "raw"){
+                src = `<pre>${escapeHtml(src)}</pre>`;
             }
             let cls = '';
             if(format == this.state.activeFormat){
@@ -69,6 +83,7 @@ class MessageItem extends React.Component {
         return (
             <div className="activeEmail">
                 <table className="details"><tbody>
+                    <tr><th>Subject</th><td>{message.subject}</td></tr>
                     <tr><th>From</th><td>{message.from}</td></tr>
                     <tr><th>To</th><td>{message.to}</td></tr>
                 </tbody></table>
@@ -88,7 +103,6 @@ class MessageList extends React.Component {
     }
 
     handleChangeActiveEmail(message){
-        console.log("state", this);
         this.setState({
             activeEmail: message
         });
@@ -96,8 +110,10 @@ class MessageList extends React.Component {
 
     render(){
         let list = this.state.emails.map((message) => {
+           let active = this.state.activeEmail == message;
            return (
-                <MessageListItem key={message.id} message={message} onItemClicked={this.handleChangeActiveEmail.bind(this)} />
+                <MessageListItem key={message.id} active={active}
+                    message={message} onItemClicked={this.handleChangeActiveEmail.bind(this)} />
            );
         });
         let active = null;
@@ -116,17 +132,25 @@ class MessageList extends React.Component {
     }
 
     componentDidMount(){
+        setInterval(() => {
+            this.refresh();
+        }, 5000);
+        this.refresh();
+    }
+    
+    refresh(){
         request.get("/emails", (error, res) => {
             let emails = [];
             res.body.emails.forEach((email,i) => {
                 let parser = new MimeParser();
                 let box = {
                     'formats': [],
-                    'id': i
+                    'id': i,
                 };
 
                 parser.onheader = function(node){
                     if(node.headers['from']){
+                        box['subject'] = last(node.headers['subject']).initial;
                         box['from'] = last(node.headers['from']).initial;
                         box['to'] = last(node.headers['to']).initial;
                     }
@@ -136,7 +160,7 @@ class MessageList extends React.Component {
                     console.log(node);
                     box['formats'].push({
                         "type": node.headers['content-type'][0].value,
-                        "text": new TextDecoder(node.charset).decode(node.content)
+                        "text": new TextDecoder(node.charset).decode(chunk)
                     });
                 };
                 parser.onend = (email_obj) => {
@@ -145,6 +169,10 @@ class MessageList extends React.Component {
 
                 parser.write(email);
                 parser.end();
+                box.formats.push({
+                    "type": "raw",
+                    "text": email
+                })
                 emails.push(box);
             });
             this.setState({
@@ -168,3 +196,15 @@ ReactDOM.render(
     <AppChrome/>,
     document.getElementById("container")
 )
+
+function escapeHtml(text) {
+  var map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+
+  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
